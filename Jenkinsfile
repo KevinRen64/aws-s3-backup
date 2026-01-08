@@ -3,7 +3,7 @@ pipeline {
   parameters {
     choice(
       name: 'MODE',
-      choices: ['test', 'dry-run'].join('\n'),
+      choices: "test\ndry-run",
       description: 'Run mode for CI'
     )
   }
