@@ -14,7 +14,21 @@ pipeline {
     }
   }
 
+  environment {
+    DEMO_SECRET = credentials('demo-secret')
+  }
+
+
   stages {
+    stage('Verify credentials') {
+      steps {
+        sh '''
+          set -e
+          echo "DEMO_SECRET is set (length=${#DEMO_SECRET})"
+        '''
+      }
+    
+    }
     stage('Setup venv & install deps') {
       steps {
         sh '''
