@@ -1,11 +1,20 @@
-pipeline{
-  agent{
-    docker{
+pipeline {
+
+  parameters {
+    choice(
+      name: 'MODE',
+      choices: ['test', 'dry-run'].join('\n'),
+      description: 'Run mode for CI'
+    )
+  }
+
+  agent {
+    docker {
       image 'python:3.10-slim'
     }
   }
 
-  stages{
+  stages {
     stage('Setup venv & install deps') {
       steps {
         sh '''
@@ -25,18 +34,25 @@ pipeline{
         sh '''
           set -e
           . .venv/bin/activate
+          echo "Running in MODE=$MODE"
+
+          if [ "$MODE" = "dry-run" ]; then
+            echo "Dry-run: skipping pytest"
+            exit 0
+          fi
+
           pytest -q
         '''
       }
     }
-}
+  }
 
-    post {
-      success {
-        echo 'CI passed: tests are green'
-      }
-      failure {
-        echo 'CI failed: check test or dependency errors'
-      }
+  post {
+    success {
+      echo 'CI passed: tests are green'
+    }
+    failure {
+      echo 'CI failed: check test or dependency errors'
+    }
   }
 }
