@@ -2,16 +2,18 @@ pipeline{
   agent{
     docker{
       image 'python:3.10-slim'
-      args '-u root:root'
     }
   }
 
   stages{
-    stage('Install dependencies') {
+    stage('Setup venv & install deps') {
       steps {
         sh '''
+          set -e
           python -V
-          pip install --upgrade pip
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install -U pip
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
         '''
@@ -20,8 +22,21 @@ pipeline{
 
     stage('Run tests') {
       steps {
-        sh 'pytest -q'
+        sh '''
+          set -e
+          . .venv/bin/activate
+          pytest -q
+        '''
       }
     }
+}
+
+    post {
+      success {
+        echo 'CI passed: tests are green'
+      }
+      failure {
+        echo 'CI failed: check test or dependency errors'
+      }
   }
 }
